@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
-	"strconv"
 
 	"github.com/Z33DD/Napoleon/db"
 	"github.com/Z33DD/Napoleon/views"
@@ -18,27 +18,20 @@ func main() {
 	http.HandleFunc("/add", views.AddLink)
 	http.HandleFunc("/s/", views.GetLink)
 
-	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
 
-	fmt.Println("Server lintening on http://" + host + ":" + port)
-	log.Fatal(http.ListenAndServe(host+":"+port, nil))
+	fmt.Println("Server lintening on http://0.0.0.0:" + port)
+	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
 
 func getRedisClient() *redis.Client {
-	addr := os.Getenv("REDIS_ADDR")
-	psswd := os.Getenv("REDIS_PASSWORD")
-	db, err := strconv.Atoi(os.Getenv("REDIS_DB"))
+	config, err := getOptionsFromUrl(os.Getenv("REDISTOGO_URL"))
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     addr,
-		Password: psswd,
-		DB:       db,
-	})
+	client := redis.NewClient(config)
 	_, err = client.Ping().Result()
 
 	if err != nil {
@@ -46,4 +39,20 @@ func getRedisClient() *redis.Client {
 	}
 
 	return client
+}
+
+func getOptionsFromUrl(urlString string) (*redis.Options, error) {
+	u, err := url.Parse(urlString)
+	if err != nil {
+		return nil, err
+	}
+	password, _ := u.User.Password()
+
+	options := &redis.Options{
+		Addr:     u.Host,
+		Password: password,
+		DB:       0,
+	}
+
+	return options, nil
 }
