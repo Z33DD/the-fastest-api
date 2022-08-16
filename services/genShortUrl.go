@@ -9,8 +9,8 @@ import (
 )
 
 func GenShortenedLink(original string) string {
-	shortened := fmt.Sprint(rand.Int63n(1000))
+	linkId := fmt.Sprint(rand.Int63n(1000))
 	host := os.Getenv("HOST")
-	db.Client.Set(shortened, original, 0)
-	return "https://" + host + "/s/" + shortened
+	db.Client.Set(linkId, original, 0)
+	return "https://" + host + "/s/" + linkId
 }
