@@ -13,15 +13,13 @@ import (
 func GetLink(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	pathArgs := strings.Split(path, "/")
-	shortUrl := pathArgs[2]
-	original, err := db.Client.Get(shortUrl).Result()
-	log.Printf("[Redirect] %s -> %s", shortUrl, original)
+	linkId := pathArgs[2]
+	original, err := db.Client.Get(linkId).Result()
 	if err != nil {
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprintf(w, "Does not exists!")
 		return
 	}
-	log.Printf("Redirected from %s to: %s", shortUrl, original)
+	log.Printf("[Redirect] %s -> %s", linkId, original)
 	http.Redirect(w, r, original, http.StatusPermanentRedirect)
-	return
 }
