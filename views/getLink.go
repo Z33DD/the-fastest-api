@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Z33DD/Napoleon/db"
-	"github.com/Z33DD/Napoleon/services"
 )
 
 // GetLink - Find link that matches the shortened link in the linkList
@@ -21,7 +20,6 @@ func GetLink(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Does not exists!")
 		return
 	}
-	go services.Track(linkId)
 	log.Printf("[Redirect] %s -> %s", linkId, original)
 	http.Redirect(w, r, original, http.StatusPermanentRedirect)
 }
