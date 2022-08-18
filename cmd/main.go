@@ -4,15 +4,20 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/Z33DD/Napoleon/db"
 	"github.com/Z33DD/Napoleon/views"
 	"github.com/go-redis/redis"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	db.Client = getRedisClient()
 
 	http.HandleFunc("/add", views.AddLink)
@@ -25,7 +30,7 @@ func main() {
 }
 
 func getRedisClient() *redis.Client {
-	config, err := getOptionsFromUrl(os.Getenv("REDISTOGO_URL"))
+	config, err := redis.ParseURL(os.Getenv("REDISTOGO_URL"))
 
 	if err != nil {
 		log.Fatal(err)
@@ -39,20 +44,4 @@ func getRedisClient() *redis.Client {
 	}
 
 	return client
-}
-
-func getOptionsFromUrl(urlString string) (*redis.Options, error) {
-	u, err := url.Parse(urlString)
-	if err != nil {
-		return nil, err
-	}
-	password, _ := u.User.Password()
-
-	options := &redis.Options{
-		Addr:     u.Host,
-		Password: password,
-		DB:       0,
-	}
-
-	return options, nil
 }
